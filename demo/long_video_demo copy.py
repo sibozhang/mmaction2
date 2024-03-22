@@ -10,7 +10,6 @@ import numpy as np
 import torch
 from mmcv import Config, DictAction
 from mmcv.parallel import collate, scatter
-
 from mmaction.apis import init_recognizer
 from mmaction.datasets.pipelines import Compose
 
@@ -21,7 +20,7 @@ LINETYPE = 1
 
 EXCLUED_STEPS = [
     'OpenCVInit', 'OpenCVDecode', 'DecordInit', 'DecordDecode', 'PyAVInit',
-    'PyAVDecode', 'RawFrameDecode'
+    'PyAVDecode', 'RawFrameDecode', 'FrameSelector'
 ]
 
 
@@ -93,7 +92,8 @@ def show_results_video(result_queue,
             selected_label, score = result
             if score < thr:
                 break
-            location = (0, 40 + i * 20)
+            # location = (0, 40 + i * 20)
+            location = (0, 150+ i * 20)
             text = selected_label + ': ' + str(round(score, 2))
             text_info[location] = text
             cv2.putText(frame, text, location, FONTFACE, FONTSCALE,
@@ -103,8 +103,10 @@ def show_results_video(result_queue,
             cv2.putText(frame, text, location, FONTFACE, FONTSCALE,
                         label_color, THICKNESS, LINETYPE)
     else:
-        cv2.putText(frame, msg, (0, 40), FONTFACE, FONTSCALE, msg_color,
-                    THICKNESS, LINETYPE)
+        # cv2.putText(frame, msg, (0, 40), FONTFACE, FONTSCALE, msg_color,
+        #             THICKNESS, LINETYPE)
+        cv2.putText(frame, msg, (0, 150), FONTFACE, FONTSCALE, msg_color,
+                    THICKNESS, LINETYPE)        
     video_writer.write(frame)
     return text_info
 
@@ -233,6 +235,13 @@ def main():
     cfg.merge_from_dict(args.cfg_options)
 
     model = init_recognizer(cfg, args.checkpoint, device=args.device)
+
+#add paralell
+    # device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+
+    # model= nn.DataParallel(model,device)
+    # model.to(device)
+
     data = dict(img_shape=None, modality='RGB', label=-1)
     with open(args.label, 'r') as f:
         label = [line.strip() for line in f]

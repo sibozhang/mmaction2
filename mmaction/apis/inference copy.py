@@ -48,7 +48,7 @@ def init_recognizer(config,
     config.model.backbone.pretrained = None
     model = build_recognizer(config.model, test_cfg=config.get('test_cfg'))
     
-    # model=torch.nn.DataParallel(model, device_ids=[0, 1, 2, 3, 4, 5, 6, 7])
+    model=torch.nn.DataParallel(model, device_ids=[0, 1, 2, 3, 4, 5, 6, 7])
 
     # add
     # if isinstance(model, torch.nn.DataParallel):

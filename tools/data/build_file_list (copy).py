@@ -12,10 +12,7 @@ from tools.data.parse_file_list import (parse_directory, parse_diving48_splits,
                                         parse_kinetics_splits,
                                         parse_mit_splits, parse_mmit_splits,
                                         parse_sthv1_splits, parse_sthv2_splits,
-                                        parse_ucf101_splits,
-                                        parse_excavator_splits,
-                                        parse_construction_splits
-                                        )
+                                        parse_ucf101_splits)
 
 
 def parse_args():
@@ -26,7 +23,7 @@ def parse_args():
         choices=[
             'ucf101', 'kinetics400', 'kinetics600', 'kinetics700', 'thumos14',
             'sthv1', 'sthv2', 'mit', 'mmit', 'activitynet', 'hmdb51', 'jester',
-            'diving48', 'excavator', 'construction'
+            'diving48'
         ],
         help='dataset to be built file list')
     parser.add_argument(
@@ -117,7 +114,7 @@ def build_file_list(splits, frame_info, shuffle=False):
         for item in split:
             if item[0] not in frame_info:
                 continue
-            if frame_info[item[0]][1] > 0:
+            elif frame_info[item[0]][1] > 0:
                 # rawframes
                 rgb_cnt = frame_info[item[0]][1]
                 flow_cnt = frame_info[item[0]][2]
@@ -212,10 +209,6 @@ def main():
         splits = parse_jester_splits(args.level)
     elif args.dataset == 'diving48':
         splits = parse_diving48_splits()
-    elif args.dataset == 'excavator':
-        splits = parse_excavator_splits(args.level)
-    elif args.dataset == 'construction':
-        splits = parse_construction_splits(args.level)
     else:
         raise ValueError(
             f"Supported datasets are 'ucf101, sthv1, sthv2', 'jester', "

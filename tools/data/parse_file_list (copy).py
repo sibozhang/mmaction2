@@ -131,110 +131,6 @@ def parse_ucf101_splits(level):
     return splits
 
 
-def parse_excavator_splits(level):
-    """Parse excavator dataset into "train", "val", "test" splits.
-
-    Args:
-        level (int): Directory level of data. 1 for the single-level directory,
-            2 for the two-level directory.
-
-    Returns:
-        list: "train", "val", "test" splits of UCF-101.
-    """
-    class_index_file = 'data/excavator/annotations/classInd.txt'
-    # train_file_template = 'data/excavator/annotations/trainlist{:02d}.txt'
-    # test_file_template = 'data/excavator/annotations/testlist{:02d}.txt'
-    train_file_template = 'data/excavator/annotations/trainlist.txt'
-    test_file_template = 'data/excavator/annotations/testlist.txt'
-
-    with open(class_index_file, 'r') as fin:
-        class_index = [x.strip().split() for x in fin]
-    class_mapping = {x[1]: int(x[0]) - 1 for x in class_index}
-
-    def line_to_map(line):
-        """A function to map line string to video and label.
-
-        Args:
-            line (str): A long directory path, which is a text path.
-
-        Returns:
-            tuple[str, str]: (video, label), video is the video id,
-                label is the video label.
-        """
-        items = line.strip().split()
-        video = osp.splitext(items[0])[0]
-        if level == 1:
-            video = osp.basename(video)
-            label = items[0]
-        elif level == 2:
-            video = osp.join(
-                osp.basename(osp.dirname(video)), osp.basename(video))
-            label = class_mapping[osp.dirname(items[0])]
-        return video, label
-
-    splits = []
-    for i in range(1, 4):
-        with open(train_file_template.format(i), 'r') as fin:
-            train_list = [line_to_map(x) for x in fin]
-
-        with open(test_file_template.format(i), 'r') as fin:
-            test_list = [line_to_map(x) for x in fin]
-        splits.append((train_list, test_list))
-
-    return splits
-
-def parse_construction_splits(level):
-    """Parse construction dataset into "train", "val", "test" splits.
-
-    Args:
-        level (int): Directory level of data. 1 for the single-level directory,
-            2 for the two-level directory.
-
-    Returns:
-        list: "train", "val", "test" splits of UCF-101.
-    """
-    class_index_file = 'data/construction/annotations/classInd.txt'
-    # train_file_template = 'data/excavator/annotations/trainlist{:02d}.txt'
-    # test_file_template = 'data/excavator/annotations/testlist{:02d}.txt'
-    train_file_template = 'data/construction/annotations/trainlist.txt'
-    test_file_template = 'data/construction/annotations/testlist.txt'
-
-    with open(class_index_file, 'r') as fin:
-        class_index = [x.strip().split() for x in fin]
-    class_mapping = {x[1]: int(x[0]) - 1 for x in class_index}
-
-    def line_to_map(line):
-        """A function to map line string to video and label.
-
-        Args:
-            line (str): A long directory path, which is a text path.
-
-        Returns:
-            tuple[str, str]: (video, label), video is the video id,
-                label is the video label.
-        """
-        items = line.strip().split()
-        video = osp.splitext(items[0])[0]
-        if level == 1:
-            video = osp.basename(video)
-            label = items[0]
-        elif level == 2:
-            video = osp.join(
-                osp.basename(osp.dirname(video)), osp.basename(video))
-            label = class_mapping[osp.dirname(items[0])]
-        return video, label
-
-    splits = []
-    for i in range(1, 4):
-        with open(train_file_template.format(i), 'r') as fin:
-            train_list = [line_to_map(x) for x in fin]
-
-        with open(test_file_template.format(i), 'r') as fin:
-            test_list = [line_to_map(x) for x in fin]
-        splits.append((train_list, test_list))
-
-    return splits
-
 def parse_jester_splits(level):
     """Parse Jester into "train", "val" splits.
 
@@ -265,9 +161,9 @@ def parse_jester_splits(level):
                 osp.basename(osp.dirname(video)), osp.basename(video))
         if test_mode:
             return video
-
-        label = class_mapping[items[1]]
-        return video, label
+        else:
+            label = class_mapping[items[1]]
+            return video, label
 
     with open(train_file, 'r') as fin:
         train_list = [line_to_map(x) for x in fin]
@@ -314,9 +210,9 @@ def parse_sthv1_splits(level):
                 osp.basename(osp.dirname(video)), osp.basename(video))
         if test_mode:
             return video
-
-        label = class_mapping[items[1]]
-        return video, label
+        else:
+            label = class_mapping[items[1]]
+            return video, label
 
     with open(train_file, 'r') as fin:
         train_list = [line_to_map(x) for x in fin]
@@ -361,11 +257,11 @@ def parse_sthv2_splits(level):
                 osp.basename(osp.dirname(video)), osp.basename(video))
         if test_mode:
             return video
-
-        template = item['template'].replace('[', '')
-        template = template.replace(']', '')
-        label = int(class_mapping[template])
-        return video, label
+        else:
+            template = item['template'].replace('[', '')
+            template = template.replace(']', '')
+            label = int(class_mapping[template])
+            return video, label
 
     with open(train_file, 'r') as fin:
         items = json.loads(fin.read())
@@ -435,8 +331,8 @@ def parse_kinetics_splits(level, dataset):
         """
         if not keep_whitespaces:
             return s.replace('"', '').replace(' ', '_')
-
-        return s.replace('"', '')
+        else:
+            return s.replace('"', '')
 
     def line_to_map(x, test=False):
         """A function to map line string to video and label.
@@ -455,14 +351,14 @@ def parse_kinetics_splits(level, dataset):
             video = f'{x[1]}_{int(float(x[2])):06d}_{int(float(x[3])):06d}'
             label = -1  # label unknown
             return video, label
-
-        video = f'{x[1]}_{int(float(x[2])):06d}_{int(float(x[3])):06d}'
-        if level == 2:
-            video = f'{convert_label(x[0])}/{video}'
         else:
-            assert level == 1
-        label = class_mapping[convert_label(x[0])]
-        return video, label
+            video = f'{x[1]}_{int(float(x[2])):06d}_{int(float(x[3])):06d}'
+            if level == 2:
+                video = f'{convert_label(x[0])}/{video}'
+            else:
+                assert level == 1
+            label = class_mapping[convert_label(x[0])]
+            return video, label
 
     train_file = f'data/{dataset}/annotations/kinetics_train.csv'
     val_file = f'data/{dataset}/annotations/kinetics_val.csv'
@@ -472,7 +368,7 @@ def parse_kinetics_splits(level, dataset):
     # skip the first line
     next(csv_reader)
 
-    labels_sorted = sorted({convert_label(row[0]) for row in csv_reader})
+    labels_sorted = sorted(set([convert_label(row[0]) for row in csv_reader]))
     class_mapping = {label: i for i, label in enumerate(labels_sorted)}
 
     csv_reader = csv.reader(open(train_file))
